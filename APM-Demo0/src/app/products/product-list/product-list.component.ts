@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Store } from '@ngrx/store';
 
 import { Subscription } from 'rxjs';
 
 import { Product } from '../product';
 import { ProductService } from '../product.service';
+import { State } from '../state/product.reducer';
 
 @Component({
   selector: 'pm-product-list',
@@ -22,7 +24,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   selectedProduct: Product | null;
   sub: Subscription;
 
-  constructor(private productService: ProductService) { }
+  constructor(private store: Store<State>, private productService: ProductService) { }
 
   ngOnInit(): void {
     this.sub = this.productService.selectedProductChanges$.subscribe(
@@ -33,6 +35,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
       next: (products: Product[]) => this.products = products,
       error: err => this.errorMessage = err
     });
+    //TODO -- unsubscribe
+    //product is the name of the slice of state. when state changes we recieve the entire product slice
+    this.store.select('products').subscribe(products => {
+      //wait until the state exists
+      if (products) {
+        this.displayCode = products.showProductCode;
+      }
+    })
   }
 
   ngOnDestroy(): void {
@@ -40,7 +50,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   checkChanged(): void {
-    this.displayCode = !this.displayCode;
+    //old way ----  this.displayCode = !this.displayCode;
+    //dispatch action using (NGRX) -- neds to be same name as the one specified in  create action. 
+    this.store.dispatch(
+      { type: '[Product] Toggle Product Code' }
+    );
+
   }
 
   newProduct(): void {

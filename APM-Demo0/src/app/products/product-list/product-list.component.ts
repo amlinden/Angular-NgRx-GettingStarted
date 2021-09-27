@@ -18,7 +18,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   displayCode: boolean;
 
-  products: Product[];
+  products: Produ;
 
   // Used to highlight the selected product in the list
   selectedProduct: Product | null;

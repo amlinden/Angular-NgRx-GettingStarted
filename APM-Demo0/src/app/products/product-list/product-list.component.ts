@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 
 import { Product } from '../product';
 import { ProductService } from '../product.service';
-import { State } from '../state/product.reducer';
+import { getShowProductCode, State } from '../state/product.reducer';
 
 @Component({
   selector: 'pm-product-list',
@@ -36,34 +36,30 @@ export class ProductListComponent implements OnInit, OnDestroy {
       error: err => this.errorMessage = err
     });
     //TODO -- unsubscribe
-    //product is the name of the slice of state. when state changes we recieve the entire product slice
-    this.store.select('products').subscribe(products => {
-      //wait until the state exists
-      if (products) {
-        this.displayCode = products.showProductCode;
-      }
-    })
-  }
-
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
-
-  checkChanged(): void {
-    //old way ----  this.displayCode = !this.displayCode;
-    //dispatch action using (NGRX) -- neds to be same name as the one specified in  create action. 
-    this.store.dispatch(
-      { type: '[Product] Toggle Product Code' }
+    this.store.select(getShowProductCode).subscribe(
+      showProductCode => this.displayCode = showProductCode
     );
+}
 
-  }
+ngOnDestroy(): void {
+  this.sub.unsubscribe();
+}
 
-  newProduct(): void {
-    this.productService.changeSelectedProduct(this.productService.newProduct());
-  }
+checkChanged(): void {
+  //old way ----  this.displayCode = !this.displayCode;
+  //dispatch action using (NGRX) -- neds to be same name as the one specified in  create action. 
+  this.store.dispatch(
+    { type: '[Product] Toggle Product Code' }
+  );
 
-  productSelected(product: Product): void {
-    this.productService.changeSelectedProduct(product);
-  }
+}
+
+newProduct(): void {
+  this.productService.changeSelectedProduct(this.productService.newProduct());
+}
+
+productSelected(product: Product): void {
+  this.productService.changeSelectedProduct(product);
+}
 
 }

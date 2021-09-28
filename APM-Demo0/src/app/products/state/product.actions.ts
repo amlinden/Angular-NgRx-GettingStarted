@@ -13,6 +13,10 @@ export const setCurrentProduct = createAction(
     props<{ product: Product}>()
 )
 
+export const initializeCurrentProduct = createAction(
+    '[Product] Initialize Current product',
+)
+
 //http request
 export const loadProducts = createAction(
     '[Product] Load products',

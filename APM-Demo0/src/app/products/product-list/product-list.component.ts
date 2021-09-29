@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Product } from '../product';
-import { getCurrentProduct, getProducts, getShowProductCode, State } from '../state/product.reducer';
+import { getCurrentProduct, getError, getProducts, getShowProductCode, State } from '../state/product.reducer';
 import * as ProductActions from '../state/product.actions';
 import { Observable } from 'rxjs';
 
@@ -13,13 +13,13 @@ import { Observable } from 'rxjs';
 })
 export class ProductListComponent implements OnInit {
   pageTitle = 'Products';
-  errorMessage: string;
 
   // Used to highlight the selected product in the list
   selectedProduct: Product | null;
   products$: Observable<Product[]>;
   selectedProduct$: Observable<Product>;
   displayCode$: Observable<boolean>;
+  error$: Observable<string>;
 
   constructor(private store: Store<State>) { }
 
@@ -29,6 +29,7 @@ export class ProductListComponent implements OnInit {
 
     this.products$ = this.store.select(getProducts)
 
+    this.error$ = this.store.select(getError)
     //TODO -- unsubscribe
     //product is the name of the slice of state. when state changes we recieve the entire product slice
     this.displayCode$ = this.store.select(getShowProductCode)
@@ -54,3 +55,4 @@ export class ProductListComponent implements OnInit {
   }
 
 }
+

@@ -62,11 +62,11 @@ export const productReducer = createReducer<ProductState>(
         }
     }),
 
-   
+
     on(ProductActions.initializeCurrentProduct, (state): ProductState => {
         return {
             ...state,
-             //set to object literal
+            //set to object literal
             currentProduct: {
                 id: 2,
                 productName: "",
@@ -74,6 +74,12 @@ export const productReducer = createReducer<ProductState>(
                 description: "",
                 starRating: 0
             }
+        }
+    }),
+    on(ProductActions.loadProductsSuccess, (state, action): ProductState => {
+        return {
+            ...state,
+            products: action.products
         }
     })
 )

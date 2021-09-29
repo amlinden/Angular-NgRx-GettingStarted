@@ -7,8 +7,10 @@ import { GenericValidator } from '../../shared/generic-validator';
 import { NumberValidators } from '../../shared/number.validator';
 import { Store } from '@ngrx/store';
 import * as ProductActions from '../state/product.actions';
+import { Observable } from 'rxjs';
 
 import { getCurrentProduct, State } from '../state/product.reducer';
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'pm-product-edit',
@@ -19,12 +21,11 @@ export class ProductEditComponent implements OnInit {
   errorMessage = '';
   productForm: FormGroup;
 
-  product: Product | null;
-
   // Use with the generic validation message class
   displayMessage: { [key: string]: string } = {};
   private validationMessages: { [key: string]: { [key: string]: string } };
   private genericValidator: GenericValidator;
+  product$: Observable<Product | null>;
 
   constructor(private store: Store<State>, private fb: FormBuilder, private productService: ProductService) {
 
@@ -60,9 +61,9 @@ export class ProductEditComponent implements OnInit {
 
 
     //TODO - unsubscribe
-    this.store.select(getCurrentProduct).subscribe(
+    this.product$ = this.store.select(getCurrentProduct).pipe(tap(
       currentProduct => this.displayProduct(currentProduct)
-    );
+    ))
 
 
     // Watch for value changes for validation
@@ -79,8 +80,6 @@ export class ProductEditComponent implements OnInit {
   }
 
   displayProduct(product: Product | null): void {
-    // Set the local product property
-    this.product = product;
 
     if (product) {
       // Reset the form back to pristine

@@ -1,100 +1,123 @@
-import { createFeatureSelector, createReducer, createSelector, on } from "@ngrx/store";
-import * as AppState from '../../state/app.state';
-import * as ProductActions from './product.actions';
+import { createReducer, on } from "@ngrx/store"
 import { Product } from "../product";
-
-
-export interface State extends AppState.State {
-    products: ProductState;
-}
-
+import { ProductPageActions, ProductApiActions } from './actions';
 export interface ProductState {
     showProductCode: boolean;
-    currentProduct: Product;
+    currentProductId: number | null;
     products: Product[];
     error: string;
 }
 
 const initialState: ProductState = {
     showProductCode: true,
-    currentProduct: null,
+    currentProductId: null,
     products: [],
     error: ''
 }
-const getProductFeatureState = createFeatureSelector<ProductState>('products');
-
-export const getShowProductCode = createSelector(
-    getProductFeatureState,
-    state => state.showProductCode
-)
-
-export const getProducts = createSelector(
-    getProductFeatureState,
-    state => state.products
-)
-
-export const getCurrentProduct = createSelector(
-    getProductFeatureState,
-    state => state.currentProduct
-)
-export const getError = createSelector(
-    getProductFeatureState,
-    state => state.error,
-    )
 
 export const productReducer = createReducer<ProductState>(
     initialState,
     //without action metadata
-    on(ProductActions.toggleProductCode, (state): ProductState => {
+    on(ProductPageActions.toggleProductCode, (state): ProductState => {
         console.log('org state' + JSON.stringify(state))
         return {
             ...state,
             showProductCode: !state.showProductCode
         }
     }),
-    on(ProductActions.setCurrentProduct, (state, action): ProductState => {
+    on(ProductPageActions.setCurrentProduct, (state, action): ProductState => {
         return {
             ...state,
-            currentProduct: action.product
-
+            currentProductId: action.currentProductId
         }
     }),
     //with action meta data - we pass in state and actions data
     //set current prod to nul
-    on(ProductActions.clearCurrentProduct, (state): ProductState => {
+    on(ProductPageActions.clearCurrentProduct, (state): ProductState => {
         return {
             ...state,
-            currentProduct: null
+            currentProductId: null
         }
     }),
 
 
-    on(ProductActions.initializeCurrentProduct, (state): ProductState => {
+    on(ProductPageActions.initializeCurrentProduct, (state): ProductState => {
         return {
             ...state,
             //set to object literal
-            currentProduct: {
-                id: 2,
-                productName: "",
-                productCode: "new",
-                description: "",
-                starRating: 0
-            }
+            currentProductId: 0
         }
     }),
-    on(ProductActions.loadProductsSuccess, (state, action): ProductState => {
+    on(ProductApiActions.loadProductsSuccess, (state, action): ProductState => {
         return {
             ...state,
             products: action.products,
             error: '' // clear any old errors
         }
     }),
-    on(ProductActions.loadProductsFail,
-         (state, action): ProductState => {
-        return {
-            ...state,
-            products: [],
-            error: action.error
-        }
-    })
+    on(ProductApiActions.loadProductsFail,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                products: [],
+                error: action.error
+            }
+        }),
+    on(ProductApiActions.updateProductSuccess,
+        (state, action): ProductState => {
+            //make sure we create a new array instead of updating an existing array
+            const updatedProducts = state.products.map(item =>
+                action.product.id === item.id ? action.product : item)
+            return {
+                ...state,
+                products: updatedProducts,
+                currentProductId: action.product.id,
+                error: ''
+            }
+
+        }),
+    on(ProductApiActions.updateProductFailure,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                currentProductId: null,
+                error: action.error
+            }
+
+        }),
+
+    on(ProductApiActions.createProductSuccess,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                products: [...state.products, action.product],
+                currentProductId: action.product.id,
+                error: '' // clear any old errors
+            }
+        }),
+    on(ProductApiActions.createProductFailure,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                error: action.error
+            }
+        }),
+
+    on(ProductApiActions.deleteProductSuccess,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                products: state.products.filter(item =>
+                    action.productId !== item.id),
+                currentProductId: null,
+                error: '' // clear any old errors
+            }
+        }),
+    on(ProductApiActions.deleteProductFailure,
+        (state, action): ProductState => {
+            return {
+                ...state,
+                error: action.error
+            }
+        }),
 )
